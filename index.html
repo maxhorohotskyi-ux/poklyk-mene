@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff4e8">
+<title>Поклич мене ☕</title>
+<style>
+:root{--bg:#fff8f1;--card:#fff;--ink:#35251f;--muted:#806f65;--accent:#b96742;--accent2:#f4dfd0;--line:#f0dfd2;--good:#2e7d5b;--bad:#b43e3e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#fff8f1,#f8e8dc);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{width:min(760px,100%);margin:auto;padding:20px 14px 48px}
+header{text-align:center;padding:18px 0 14px}h1{margin:0;font-size:clamp(30px,7vw,44px)}header p{color:var(--muted);margin:8px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 8px 24px #8b56350d}
+h2{font-size:21px;margin:0 0 12px}label{display:block;font-weight:650;margin:12px 0 6px}
+input,select,textarea{font:inherit;width:100%;padding:12px 13px;border:1px solid #e3cbb9;border-radius:12px;background:#fffdfa;color:var(--ink)}
+button{font:inherit;font-weight:700;border:0;border-radius:13px;padding:12px 15px;background:var(--accent);color:white;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:var(--accent2);color:var(--ink)}.danger{background:#f9e1df;color:#842d2d}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.big{font-size:19px;min-height:88px;background:#fff1e5;color:var(--ink);border:1px solid var(--line)}
+.big span{display:block;font-size:30px;margin-bottom:5px}
+.muted{color:var(--muted);font-size:14px}.status{padding:11px 13px;border-radius:12px;background:#f8eee6;margin:10px 0;white-space:pre-wrap}
+.status.error{background:#ffebea;color:var(--bad)}.status.success{background:#e8f6ee;color:var(--good)}
+.item{padding:13px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.item strong{display:block}.item small{color:var(--muted)}
+.pill{display:inline-block;border-radius:100px;background:#f7e6d9;padding:4px 9px;font-size:12px;margin-left:5px}
+.hidden{display:none!important}.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.card{padding:15px}.actions button{min-width:120px}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>☕ Поклич мене</h1><p>Маленькі прохання для своїх людей ❤️</p></header>
+<div id="status" class="status">Щоб підключити онлайн-версію, спочатку потрібне налаштування Firebase. Дивись файл «ІНСТРУКЦІЯ.txt».</div>
+
+<section id="authCard" class="card">
+<h2>Увійти або створити акаунт</h2>
+<p class="muted">Використовуйте різні юзернейми. Пароль має бути не коротшим за 6 символів.</p>
+<label for="username">Юзернейм</label><input id="username" autocomplete="username" maxlength="24" placeholder="Наприклад, maxim_11">
+<label for="password">Пароль</label><input id="password" type="password" autocomplete="current-password" minlength="6" placeholder="Щонайменше 6 символів">
+<div class="actions"><button id="googleBtn">Увійти через Google</button></div><div class="actions"><button id="signupBtn">Створити акаунт</button><button id="loginBtn" class="secondary">Увійти</button></div>
+<p class="muted">Можна увійти через Google або створити окремий юзернейм і пароль. Для push-сповіщень потрібні додаткові налаштування, описані в інструкції.</p>
+</section>
+
+<section id="app" class="hidden">
+<div class="card">
+<div class="topline"><div><div class="muted">Ви увійшли як</div><h2 id="myName" style="margin:3px 0 0"></h2></div><button id="logoutBtn" class="secondary">Вийти</button></div>
+<div class="actions"><button id="pushBtn">🔔 Увімкнути сповіщення</button></div><p class="muted">Натисни цю кнопку на кожному телефоні та дозволь сповіщення. Для повідомлень, коли сайт закритий, потрібні опублікований сайт і налаштований Firebase Cloud Function.</p>
+</div>
+<div class="card">
+<h2>🤝 Додати в друзі</h2>
+<label for="friendName">Юзернейм мами або друга</label><input id="friendName" maxlength="24" placeholder="Введіть точний юзернейм">
+<div class="actions"><button id="addFriendBtn">Надіслати запит у друзі</button></div>
+<div id="friendRequests"></div><div id="friendsList"></div>
+</div>
+<div class="card">
+<h2>💌 Поклич когось</h2>
+<p class="muted">Спочатку додайте одне одного в друзі.</p>
+<label for="toFriend">Кому?</label><select id="toFriend"><option value="">Оберіть друга</option></select>
+<div class="grid">
+<button class="big" data-kind="coffee"><span>☕</span>Каву, будь ласка</button>
+<button class="big" data-kind="water"><span>💧</span>Води, будь ласка</button>
+<button class="big" data-kind="hug"><span>❤️</span>Обійми!</button>
+<button class="big" data-kind="custom"><span>💬</span>Інше прохання</button>
+</div>
+<label for="customText">Текст прохання (для «Інше»)</label><input id="customText" maxlength="120" placeholder="Наприклад: зайди, будь ласка">
+</div>
+<div class="card">
+<h2>📬 Вхідні запити</h2><div id="inbox"><p class="muted">Після входу тут з'являться запити.</p></div>
+</div>
+<div class="card">
+<h2>📤 Надіслані запити</h2><div id="outbox"><p class="muted">Тут будуть твої прохання.</p></div>
+</div>
+</section>
+<footer class="muted" style="text-align:center;padding:12px">Поклич мене · сімейна мініпрограма ❤️</footer>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, updateDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+
+/* Вставте конфігурацію Firebase у файл firebase-config.js, як описано в інструкції. */
+import { firebaseConfig } from "./firebase-config.js";
+
+const $ = id => document.getElementById(id);
+const statusBox = $("status");
+let app, auth, db, currentUser = null, profile = null, unsubscribers = [], messaging = null;
+const showStatus = (msg, type="") => { statusBox.textContent = msg; statusBox.className = "status " + type; };
+const cleanName = s => s.trim().toLowerCase();
+const validName = s => /^[a-zA-Z0-9_-]{3,24}$/.test(s);
+const authEmail = name => cleanName(name) + "@poklyk-mene-user.invalid";
+const niceTime = ts => ts?.toDate ? ts.toDate().toLocaleString() : "щойно";
+const kinds = {coffee:"☕ Просить каву",water:"💧 Просить води",hug:"❤️ Просить обійми",custom:"💬 Має прохання"};
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  showStatus("Онлайн-сервіс підключено. Створи акаунт або увійди.", "success");
+  isSupported().then(ok => { if(ok) messaging = getMessaging(app); }).catch(()=>{});
+} catch (e) {
+  showStatus("Не вдалося завантажити налаштування Firebase. Перевір файл firebase-config.js та інструкцію.", "error");
+}
+
+async function signup(){
+  const name = cleanName($("username").value), pass = $("password").value;
+  if(!validName(name)) return showStatus("Юзернейм: 3–24 символи латиницею, цифри, _ або -.", "error");
+  if(pass.length < 6) return showStatus("Пароль має містити щонайменше 6 символів.", "error");
+  try {
+    const existing = await getDocs(query(collection(db,"profiles"), where("username","==",name)));
+    if(!existing.empty) return showStatus("Цей юзернейм уже зайнятий. Спробуй інший.", "error");
+    const cred = await createUserWithEmailAndPassword(auth, authEmail(name), pass);
+    await setDoc(doc(db,"profiles",cred.user.uid), {username:name, createdAt:serverTimestamp()});
+    showStatus("Акаунт створено! ❤️", "success");
+  } catch(e) { showStatus(errorMessage(e), "error"); }
+}
+async function login(){
+  const name = cleanName($("username").value), pass = $("password").value;
+  if(!validName(name) || !pass) return showStatus("Введи правильний юзернейм і пароль.", "error");
+  try { await signInWithEmailAndPassword(auth, authEmail(name), pass); showStatus("Успішний вхід!", "success"); }
+  catch(e) { showStatus(errorMessage(e), "error"); }
+}
+function errorMessage(e){
+  const c=e?.code||"";
+  if(c.includes("email-already-in-use")) return "Цей юзернейм уже зайнятий. Обери інший.";
+  if(c.includes("weak-password")) return "Зроби пароль довшим — мінімум 6 символів.";
+  if(c.includes("invalid-credential")||c.includes("user-not-found")||c.includes("wrong-password")) return "Не вдалося увійти. Перевір юзернейм і пароль.";
+  if(c.includes("network-request-failed")) return "Немає з'єднання з інтернетом. Спробуй ще раз.";
+  if(c.includes("permission-denied")) return "Firebase відхилив доступ. Перевір правила Firestore з інструкції.";
+  return "Помилка: "+(e?.message||c||"невідома")+" — звір налаштування з інструкцією.";
+}
+$("googleBtn").addEventListener("click", async()=>{
+ try { await signInWithPopup(auth,new GoogleAuthProvider()); }
+ catch(e){ showStatus(errorMessage(e),"error"); }
+});
+$("signupBtn").addEventListener("click",signup);
+$("loginBtn").addEventListener("click",login);
+$("logoutBtn").addEventListener("click",()=>signOut(auth));
+$("pushBtn").addEventListener("click",()=>enablePushNotifications().then(()=>showStatus("Запит на сповіщення налаштовано. Перевір дозволи браузера.","success")).catch(e=>showStatus("Не вдалося ввімкнути push: "+(e?.message||e),"error")));
+$("addFriendBtn").addEventListener("click",sendFriendRequest);
+document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>sendRequest(b.dataset.kind)));
+function clearListeners(){unsubscribers.forEach(fn=>fn());unsubscribers=[];}
+onAuthStateChanged(auth, async user=>{
+  clearListeners(); currentUser=user; profile=null;
+  $("authCard").classList.toggle("hidden",!!user); $("app").classList.toggle("hidden",!user);
+  if(!user) return;
+  const snap=await getDoc(doc(db,"profiles",user.uid));
+  profile=snap.data();
+  if(!profile){
+    let chosen="";
+    while(!validName(chosen)){
+      chosen=prompt("Створи юзернейм для програми (3–24 символи: латиниця, цифри, _ або -).")||"";
+      if(!chosen) { await signOut(auth); return; }
+      chosen=cleanName(chosen);
+      if(!validName(chosen)){ alert("Юзернейм має бути 3–24 символи латиницею, цифри, _ або -."); continue; }
+      const taken=await getDocs(query(collection(db,"profiles"),where("username","==",chosen)));
+      if(!taken.empty){ alert("Цей юзернейм уже зайнятий. Спробуй інший."); chosen=""; }
+    }
+    await setDoc(doc(db,"profiles",user.uid),{username:chosen,createdAt:serverTimestamp()});
+    const fresh=await getDoc(doc(db,"profiles",user.uid)); profile=fresh.data();
+  }
+  $("myName").textContent=profile.username;
+
+  listenFriends(); listenFriendRequests(); listenInbox(); listenOutbox();
+});
+async function enablePushNotifications(){
+ if(!messaging || !currentUser) return;
+ if(!("Notification" in window) || !("serviceWorker" in navigator)) return;
+ const permission=await Notification.requestPermission();
+ if(permission!=="granted") { showStatus("Сповіщення не дозволені. Їх можна ввімкнути в налаштуваннях браузера."); return; }
+ const registration=await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+ const token=await getToken(messaging,{vapidKey:"ВСТАВ_VAPID_KEY_З_FIREBASE",serviceWorkerRegistration:registration});
+ if(token) await addDoc(collection(db,"pushTokens"),{uid:currentUser.uid,token,updatedAt:serverTimestamp()});
+ onMessage(messaging,payload=>{
+   const title=payload.notification?.title||"Поклич мене ☕";
+   const body=payload.notification?.body||"У тебе нове прохання!";
+   showStatus(title+" — "+body,"success");
+ });
+}
+
+async function sendFriendRequest(){
+  if(!currentUser) return;
+  const name=cleanName($("friendName").value);
+  if(!validName(name)) return showStatus("Введи юзернейм друга (3–24 символи).","error");
+  if(name===profile.username) return showStatus("Не можна додати самого себе 🙂","error");
+  try{
+    const qs=await getDocs(query(collection(db,"profiles"),where("username","==",name)));
+    if(qs.empty) return showStatus("Такого юзернейма поки немає. Перевір написання.","error");
+    const target=qs.docs[0];
+    const old=await getDocs(query(collection(db,"friendRequests"),where("fromUid","==",currentUser.uid),where("toUid","==",target.id),where("status","==","pending")));
+    if(!old.empty) return showStatus("Запит уже надіслано.","error");
+    await addDoc(collection(db,"friendRequests"),{fromUid:currentUser.uid,toUid:target.id,fromName:profile.username,toName:name,status:"pending",createdAt:serverTimestamp()});
+    $("friendName").value=""; showStatus("Запит у друзі надіслано! ❤️","success");
+  }catch(e){showStatus(errorMessage(e),"error");}
+}
+function listenFriendRequests(){
+ const q1=query(collection(db,"friendRequests"),where("toUid","==",currentUser.uid),where("status","==","pending"));
+ unsubscribers.push(onSnapshot(q1,snap=>{
+   const el=$("friendRequests");el.innerHTML="";
+   if(snap.empty){el.innerHTML='<p class="muted">Нових запитів у друзі немає.</p>';return;}
+   snap.forEach(s=>{
+     const d=s.data(), row=document.createElement("div");row.className="item";
+     const title=document.createElement("strong");title.textContent=d.fromName+" хоче додати тебе в друзі";
+     const accept=document.createElement("button");accept.textContent="Прийняти";accept.addEventListener("click",()=>acceptFriend(s.id,d));
+     row.append(title,accept);el.append(row);
+   });
+ },e=>showStatus(errorMessage(e),"error")));
+}
+async function acceptFriend(id,d){
+ try{
+  await setDoc(doc(db,"friendships",currentUser.uid+"_"+d.fromUid),{users:[currentUser.uid,d.fromUid],createdAt:serverTimestamp()});
+  await setDoc(doc(db,"friendships",d.fromUid+"_"+currentUser.uid),{users:[d.fromUid,currentUser.uid],createdAt:serverTimestamp()});
+  await updateDoc(doc(db,"friendRequests",id),{status:"accepted"});
+  showStatus("Тепер ви друзі! 🎉","success");
+ }catch(e){showStatus(errorMessage(e),"error");}
+}
+function listenFriends(){
+ const q1=query(collection(db,"friendships"),where("users","array-contains",currentUser.uid));
+ unsubscribers.push(onSnapshot(q1,async snap=>{
+  const friends=[];
+  for(const s of snap.docs){
+   const other=s.data().users.find(uid=>uid!==currentUser.uid);if(!other)continue;
+   try{const p=await getDoc(doc(db,"profiles",other));if(p.exists())friends.push({uid:other,username:p.data().username});}catch{}
+  }
+  friends.sort((a,b)=>a.username.localeCompare(b.username));
+  const select=$("toFriend"),old=select.value;select.innerHTML='<option value="">Оберіть друга</option>';
+  friends.forEach(f=>{const o=document.createElement("option");o.value=f.uid;o.textContent=f.username;select.append(o)});
+  if(friends.some(f=>f.uid===old))select.value=old;
+  $("friendsList").innerHTML=friends.length?'<p class="muted">Твої друзі: '+friends.map(f=>escapeHtml(f.username)).join(", ")+'</p>':'<p class="muted">Поки немає друзів — надішли запит за юзернеймом.</p>';
+ },e=>showStatus(errorMessage(e),"error")));
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function sendRequest(kind){
+ if(!currentUser)return;
+ const toUid=$("toFriend").value;if(!toUid)return showStatus("Спочатку обери друга.","error");
+ const text=kind==="custom"?$("customText").value.trim():"";
+ if(kind==="custom"&&!text)return showStatus("Напиши, про що хочеш попросити.","error");
+ try{
+  await addDoc(collection(db,"requests"),{fromUid:currentUser.uid,toUid,fromName:profile.username,kind,text,status:"pending",createdAt:serverTimestamp()});
+  showStatus("Запит надіслано! ❤️","success");if(kind==="custom")$("customText").value="";
+ }catch(e){showStatus(errorMessage(e),"error");}
+}
+function renderRequests(container,snap,incoming){
+ const el=$(container);el.innerHTML="";
+ if(snap.empty){el.innerHTML='<p class="muted">Поки тут тихо.</p>';return;}
+ snap.forEach(s=>{
+  const d=s.data(),row=document.createElement("div");row.className="item";
+  const strong=document.createElement("strong");
+  strong.textContent=(incoming?d.fromName+" — ":"Ти → "+d.toUid+": ")+(d.kind==="custom"?(d.text||"Інше прохання"):(kinds[d.kind]||"Прохання"));
+  const small=document.createElement("small");small.textContent=niceTime(d.createdAt)+" · "+(d.status==="pending"?"Очікує відповіді":d.status==="done"?"Виконано":"Відхилено");
+  row.append(strong,small);
+  if(incoming&&d.status==="pending"){
+   const actions=document.createElement("div");actions.className="actions";
+   const done=document.createElement("button");done.textContent="Зроблено ❤️";done.addEventListener("click",()=>updateDoc(doc(db,"requests",s.id),{status:"done"}));
+   const decline=document.createElement("button");decline.className="secondary";decline.textContent="Не зараз";decline.addEventListener("click",()=>updateDoc(doc(db,"requests",s.id),{status:"declined"}));
+   actions.append(done,decline);row.append(actions);
+  }
+  el.append(row);
+ });
+}
+function listenInbox(){
+ const q1=query(collection(db,"requests"),where("toUid","==",currentUser.uid));
+ unsubscribers.push(onSnapshot(q1,s=>renderRequests("inbox",s,true),e=>showStatus(errorMessage(e),"error")));
+}
+function listenOutbox(){
+ const q1=query(collection(db,"requests"),where("fromUid","==",currentUser.uid));
+ unsubscribers.push(onSnapshot(q1,s=>renderRequests("outbox",s,false),e=>showStatus(errorMessage(e),"error")));
+}
+</script>
+</body>
+</html>
